@@ -1,81 +1,27 @@
-/* eslint-env node */
-'use strict';
+/**
+@module ember
+@submodule ember-routing
+*/
 
-var fs = require('fs');
-var path = require('path');
-var resolve = require('resolve');
+// ES6TODO: Cleanup modules with side-effects below
+import './ext/run_loop';
+import './ext/controller';
 
-var paths = {};
-var absolutePaths = {};
+export { default as Location } from './location/api';
+export { default as NoneLocation } from './location/none_location';
+export { default as HashLocation } from './location/hash_location';
+export { default as HistoryLocation } from './location/history_location';
+export { default as AutoLocation } from './location/auto_location';
 
-function add(paths, name, path) {
-  Object.defineProperty(paths, name, {
-    configurable: false,
-    get: function() { return path; }
-  });
-}
-
-add(paths, 'prod',  'vendor/ember/ember.prod.js');
-add(paths, 'debug', 'vendor/ember/ember.debug.js');
-add(paths, 'testing', 'vendor/ember/ember-testing.js');
-add(paths, 'jquery', 'vendor/ember/jquery/jquery.js');
-
-add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
-
-module.exports = {
-  init: function() {
-		this._super.init && this._super.init.apply(this, arguments);
-    if ('ember' in this.project.bowerDependencies()) {
-      // TODO: move this to a throw soon.
-      this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-source`, please remove it from bower');
-    }
-  },
-
-  name: 'ember-source',
-  paths: paths,
-  absolutePaths: absolutePaths,
-
-  treeForVendor: function() {
-    var Funnel = require('broccoli-funnel');
-    var MergeTrees = require('broccoli-merge-trees');
-
-    var jqueryPath;
-    try {
-      jqueryPath = path.dirname(resolve.sync('jquery/package.json', { basedir: this.project.root }));
-    } catch (error) {
-      jqueryPath = path.dirname(require.resolve('jquery/package.json'));
-    }
-
-    var jquery = new Funnel(jqueryPath + '/dist', {
-      destDir: 'ember/jquery',
-      files: [ 'jquery.js' ]
-    });
-
-    var emberFiles = [
-      'ember-runtime.js',
-      'ember-template-compiler.js',
-      'ember-testing.js',
-      'ember.debug.js',
-      'ember.min.js',
-      'ember.prod.js'
-    ]
-      .map(function(file) {
-        return [file, file.replace('.js', '.map')];
-      })
-      .reduce(function(flat, jsAndMap) {
-        return flat.concat(jsAndMap);
-      }, [])
-      .filter(function(file) {
-        var fullPath = path.join(__dirname, 'dist', file);
-
-        return fs.existsSync(fullPath);
-      });
-
-    var ember = new Funnel(__dirname + '/dist', {
-      destDir: 'ember',
-      files: emberFiles
-    });
-
-    return new MergeTrees([ember, jquery]);
-  }
-};
+export {
+  default as generateController,
+  generateControllerFactory
+} from './system/generate_controller';
+export { default as controllerFor } from './system/controller_for';
+export { default as RouterDSL } from './system/dsl';
+export { default as Router } from './system/router';
+export { default as Route } from './system/route';
+export { default as QueryParams } from './system/query_params';
+export { default as RoutingService } from './services/routing';
+export { default as RouterService } from './services/router';
+export { default as BucketCache } from './system/cache';
