@@ -166,7 +166,60 @@ const RouterService = Service.extend({
   },
 
   /**
-     Generate a URL based on the supplied route name.
+     The `urlFor` helper method generates a URL based on the supplied route name.
+
+    For an application that maps its routes as follows via the Router:
+
+    ```app/router.js
+    Router.map(function() {
+      this.route('index', { path: '/' });
+    });
+    ```
+
+    The RouterService's `urlFor` method will return the correct path to
+    the `index` route as:
+
+    ```js
+     routerService.urlFor('index', { queryParams: { page: 0 }}); // => '/'
+    ```
+
+     An object containing a queryParams property can be passed to retrieve the
+     corresponding url with parameters attached:
+
+     ```js
+      routerService.urlFor('index', { queryParams: { page: 0 }}); // => '/?page=0'
+     ```
+
+     Please note that when passing the queryParams hash to the `urlFor` helper,
+     existing default values for these parameters that are already existent on
+     a particular controller instance are ignored. If in this example the `index` controller
+     had a default value for the page query parameter defined as follows:
+
+     ```app/controllers/index.js
+     export default Controller.extend({
+       queryParams: ['page'],
+       page: 0,
+     });
+     ```
+
+     The `urlFor` helper will always return the url with the queryParams that were passed
+     to it during invocation attached regardless
+     if this particular queryParam is preset on the controller or not (in this case `/?page=0`).
+     This differs from the behaviour of the similar `generateURL` helper of the private
+     `-routing` service and has been changed for performance improvements.
+     You can read more about it in the [RouterService RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics).
+
+     If you would like the `urlFor` method to return an url without any query parameters
+     attacheds, you can explicitly unset queryParams by either
+
+     - passing no queryParams hash:
+     ```js
+       routerService.urlFor('index')
+     ```
+     - passing the `Ember.DEFAULT_VALUE` symbol as a value for the respective queryParam:
+    ```js
+      routerService.urlFor('index', { queryParams: { page: Ember.DEFAULT_VALUE }}); // => '/'
+    ```
 
      @method urlFor
      @category ember-routing-router-service
